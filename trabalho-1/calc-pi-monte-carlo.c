@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     tempo_final = MPI_Wtime();
 
     if (meu_rank == 0) {
+        printf("Número de processos: %d\n", num_proc);
         printf("n = %d\n", n);
         printf("Aproximação de PI é = %g\n", pi);
         printf("Tempo de execução: %1.10f\n", tempo_final - tempo_inicial);

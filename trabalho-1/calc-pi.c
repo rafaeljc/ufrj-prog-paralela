@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) { /* calcpi_seq.c  */
     tempo_final = MPI_Wtime();
 
     if (meu_rank == 0) {
+        printf("Número de processos: %d\n", num_proc);
         printf("n = %d\n", N);
         printf("pi = %f\n", pi/N);
         printf("Tempo de execução: %1.10f\n", tempo_final - tempo_inicial);

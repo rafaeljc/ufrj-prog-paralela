@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
     printf("--------------------------------------------------\n");
     printf("Residual sum = %6.2lf\n", SUMres);
     printf("--------------------------------------------------\n");
+    printf("n = %d\n", n);
     printf("Tempo de execução = %6.10lf\n", tempo_final - tempo_inicial);
   }
 
