@@ -63,9 +63,6 @@ int main(int argc, char **argv) {
   MPI_Request irequest;
   FILE *infile;
 
-  infile = fopen("xydata", "r");
-  if (infile == NULL) printf("error opening file\n");
-
   MPI_Init(&argc, &argv);
   MPI_Comm_rank (MPI_COMM_WORLD, &myid);
   MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
@@ -81,6 +78,8 @@ int main(int argc, char **argv) {
     //printf ("The x coordinates on worker processes:\n");
     /* this call is used to achieve a consistent output format */
     /* new_sleep (3);*/
+    infile = fopen("xydata", "r");
+    if (infile == NULL) printf("error opening file\n");
     fscanf (infile, "%d", &n);
     MPI_Ibcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD, &irequest);
     MPI_Wait(&irequest, &istatus);
@@ -88,6 +87,7 @@ int main(int argc, char **argv) {
     y = (double *) malloc (n*sizeof(double));
     for (i=0; i<n; i++)
       fscanf (infile, "%lf %lf", &x[i], &y[i]);
+    fclose(infile);
   }
   else {
     MPI_Ibcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD, &irequest);
