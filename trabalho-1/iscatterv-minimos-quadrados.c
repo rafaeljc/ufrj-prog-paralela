@@ -76,8 +76,8 @@ int main(int argc, char **argv) {
    * Step 1: Process 0 reads data and sends the value of n
    * ---------------------------------------------------------- */
   if (myid == 0) {
-    printf ("Number of processes used: %d\n", numprocs);
-    printf ("-------------------------------------\n");
+    //printf ("Number of processes used: %d\n", numprocs);
+    //printf ("-------------------------------------\n");
     //printf ("The x coordinates on worker processes:\n");
     /* this call is used to achieve a consistent output format */
     /* new_sleep (3);*/
@@ -186,11 +186,13 @@ int main(int argc, char **argv) {
       //printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n", 
 	    //  x[i], y[i], y_estimate, res);
     }
-    printf("--------------------------------------------------\n");
+    //printf("--------------------------------------------------\n");
     printf("Residual sum = %6.2lf\n", SUMres);
     printf("--------------------------------------------------\n");
+    printf ("Number of processes used: %d\n", numprocs);
     printf("n = %d\n", n);
     printf("Tempo de execução = %6.10lf\n", tempo_final - tempo_inicial);
+    printf("--------------------------------------------------\n");
   }
 
   /* ----------------------------------------------------------	*/
