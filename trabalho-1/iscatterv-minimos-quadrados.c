@@ -103,38 +103,25 @@ int main(int argc, char **argv) {
   /* ----------------------------------------------------------
    * Step 2: Process 0 sends subsets of x and y 
 !  * ---------------------------------------------------------- */
+  MPI_Request pedido[2];
   if (myid == 0) {
     scounts = (int*) malloc(numprocs * sizeof(int));
     displs = (int*) malloc(numprocs * sizeof(int));
-    scounts[myid] = naverage;
-    displs[myid] = 0;
+    scounts[0] = naverage;
+    displs[0] = 0;
     for (i=1; i<numprocs; i++) {
-      ishift = i*naverage;
-      mypoints = (i < numprocs -1) ? naverage : naverage + nremain;
-      scounts[i] = mypoints;
-      displs[i] = ishift;
-      MPI_Isend (&ishift, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &irequest);
-      MPI_Wait(&irequest, &istatus);
-      MPI_Isend (&mypoints, 1, MPI_INT, i, 2, MPI_COMM_WORLD, &irequest);
-      MPI_Wait(&irequest, &istatus);      
+      scounts[i] = (i < numprocs -1) ? naverage : naverage + nremain;
+      displs[i] = i*naverage; 
     }
-    MPI_Iscatterv(x, scounts, displs, MPI_DOUBLE, MPI_IN_PLACE, mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
-    MPI_Iscatterv(y, scounts, displs, MPI_DOUBLE, MPI_IN_PLACE, mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
-    free(scounts);
-    free(displs);
+    MPI_Iscatterv(x, scounts, displs, MPI_DOUBLE, MPI_IN_PLACE, mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &pedido[0]);
+    MPI_Iscatterv(y, scounts, displs, MPI_DOUBLE, MPI_IN_PLACE, mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &pedido[1]);
   }
   else {
+    ishift = myid * naverage;
+    mypoints = (myid < numprocs -1) ? naverage : naverage + nremain;
     /* ---------------the other processes receive---------------- */
-    MPI_Irecv (&ishift, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
-    MPI_Irecv (&mypoints, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
-    MPI_Iscatterv(x, scounts, displs, MPI_DOUBLE, &x[ishift], mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
-    MPI_Iscatterv(y, scounts, displs, MPI_DOUBLE, &y[ishift], mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &irequest);
-    MPI_Wait(&irequest, &istatus);
+    MPI_Iscatterv(x, scounts, displs, MPI_DOUBLE, &x[ishift], mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &pedido[0]);
+    MPI_Iscatterv(y, scounts, displs, MPI_DOUBLE, &y[ishift], mypoints, MPI_DOUBLE, 0, MPI_COMM_WORLD, &pedido[1]);
     //printf ("id %d: ", myid);
     //for (i=0; i<n; i++) printf("%4.2lf ", x[i]);
     //printf ("\n");
@@ -149,6 +136,8 @@ int main(int argc, char **argv) {
     ishift = 0;
     mypoints = naverage;
   }
+
+  MPI_Waitall(2, pedido, MPI_STATUSES_IGNORE);
   for (j=0; j<mypoints; j++) {
     mySUM[X] += x[ishift+j];
     mySUM[Y] += y[ishift+j];
@@ -200,5 +189,10 @@ int main(int argc, char **argv) {
   /* ----------------------------------------------------------	*/
   free(x);
   free(y);
+  if (myid == 0) {
+    free(scounts);
+    free(displs);
+  }
+  
   MPI_Finalize();
 }
