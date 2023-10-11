@@ -161,8 +161,7 @@ int main(int argc, char **argv) {
     slope = ( SUM[X]*SUM[Y] - n*SUM[XY] ) / ( SUM[X]*SUM[X] - n*SUM[XX] );
     y_intercept = ( SUM[Y] - slope*SUM[X] ) / n;
     /* this call is used to achieve a consistent output format */
-    /*new_sleep (3);*/
-    tempo_final = MPI_Wtime();
+    /*new_sleep (3);*/    
     //printf ("\n");
     printf ("The linear equation that best fits the given data:\n");
     printf ("       y = %6.2lfx + %6.2lf\n", slope, y_intercept);
@@ -178,6 +177,9 @@ int main(int argc, char **argv) {
       //printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n", 
 	    //  x[i], y[i], y_estimate, res);
     }
+    
+    tempo_final = MPI_Wtime();
+
     //printf("--------------------------------------------------\n");
     printf("Residual sum = %6.2lf\n", SUMres);
     printf("--------------------------------------------------\n");
