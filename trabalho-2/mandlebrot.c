@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <omp.h>
 
 #define X_RESN 800       /* x resolution */
 #define Y_RESN 800       /* y resolution */
@@ -56,8 +57,8 @@ void main() {
     display_height = DisplayHeight(display, screen);
 
     /* set window size */
-    width = X_RESN;
-    height = Y_RESN;
+    width = 800;
+    height = 800;
 
     /* set window position */
     x = 0;
@@ -95,9 +96,12 @@ void main() {
 
     XMapWindow(display, win);
     XSync(display, 0);
+
+    double t_inicio = omp_get_wtime();
            
     /* Calculate and draw points */
-    for (i = 0; i < X_RESN; i++) 
+    #pragma omp parallel for default(none) private(j, z, c, k, temp, lengthsq) shared(display, win, gc) schedule(static)
+    for (i = 0; i < X_RESN; i++) {
         for (j = 0; j < Y_RESN; j++) {
             z.real = z.imag = 0.0;
             c.real = ((float) j - 400.0)/200.0;            /* scale factors for 800 x 800 window */
@@ -115,6 +119,10 @@ void main() {
             if (k == 100) 
                 XDrawPoint(display, win, gc, j, i);
         }
+    } // barreira implícita        
+    
+    double t_fim = omp_get_wtime();
+    printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
      
     XFlush(display);
     sleep(30);
