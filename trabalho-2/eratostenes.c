@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
+#include <omp.h>
 
 int eratostenes(int n);
 
@@ -17,10 +17,15 @@ int main(int argc, char* argv[]) {
         exit(1);
     }    
 
+    double t_inicio = omp_get_wtime();
+
     qnt_primos = eratostenes(n);
 
+    double t_fim = omp_get_wtime();
+
     printf("Existem %d números primos entre 2 e %d\n", qnt_primos, n);
-    
+    printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
+
     return 0;
 }
 
@@ -28,8 +33,6 @@ int main(int argc, char* argv[]) {
 int eratostenes(int n) {
     if (n < 2)
         return 0;
-        
-    int qnt_primos = 1; // 2
 
     size_t size = (n + 1) * sizeof(bool);
     bool* eh_primo = (bool*) malloc(size);
@@ -38,16 +41,28 @@ int eratostenes(int n) {
         exit(2);
     }
 
-    memset(eh_primo, true, size);
+    #pragma omp parallel for default(none) shared(n, eh_primo) schedule(static)
+    for (int i = 0; i < n + 1; ++i) {
+        eh_primo[i] = true;
+    } // barreira implícita
 
-    for (int i = 2; i*i <= n; ++i)
-        if (eh_primo[i])
-            for (int j = i*i; j <= n; j += i)
+    for (int i = 2; i*i <= n; ++i) {
+        if (eh_primo[i]) {
+            #pragma omp parallel for default(none) shared(n, i, eh_primo) schedule(static)
+            for (int j = i*i; j <= n; j += i) {
                 eh_primo[j] = false;
+            } // barreira implícita            
+        }            
+    }        
 
-    for (int i = 3; i <= n; i+= 2)
+    int qnt_primos = 0;
+
+    #pragma omp parallel for default(none) shared(n, eh_primo) reduction(+:qnt_primos) schedule(static)
+    for (int i = 3; i <= n; i += 2) {
         if (eh_primo[i])
             ++qnt_primos;
+    } // barreira implícita
+    qnt_primos++; // contando o 2
 
     free(eh_primo);
 
