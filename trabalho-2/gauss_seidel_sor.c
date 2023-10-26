@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <omp.h>
 
 // Gauss-Seidel SOR (successive over-relaxation)
 #define NUM_ITER 4098
@@ -25,27 +26,40 @@ double* a_anterior = NULL;
 int main(int argc, char* argv[]) {
     iniciar();
 
+    double t_inicio = omp_get_wtime();
+
     int k = 0;    
     while (k < NUM_ITER) {
-        // fase red
-        for (int i = 1; i < N - 1; i += 2)
-            for (int j = 1; j < N - 1; j += 2)
-                if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
-                    a[i*N + j] = gauss_seidel_sor(i, j);  
-        for (int i = 2; i < N - 1; i += 2)
-            for (int j = 2; j < N - 1; j += 2)
-                if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
-                    a[i*N + j] = gauss_seidel_sor(i, j);
- 
-        // fase black
-        for (int i = 1; i < N - 1; i += 2)
-            for (int j = 2; j < N - 1; j += 2)
-                if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
-                    a[i*N + j] = gauss_seidel_sor(i, j);                  
-        for (int i = 2; i < N - 1; i += 2)
-            for (int j = 1; j < N - 1; j += 2)
-                if (i != I_FONTE_CALOR || j != J_FONTE_CALOR) 
-                    a[i*N + j] = gauss_seidel_sor(i, j);                  
+        #pragma omp parallel default(none) shared(a)
+        {
+            // fase red
+            #pragma omp for nowait schedule(static)
+            for (int i = 1; i < N - 1; i += 2) {
+                for (int j = 1; j < N - 1; j += 2)
+                    if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
+                        a[i*N + j] = gauss_seidel_sor(i, j);
+            }
+            #pragma omp for schedule(static)
+            for (int i = 2; i < N - 1; i += 2) {
+                for (int j = 2; j < N - 1; j += 2)
+                    if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
+                        a[i*N + j] = gauss_seidel_sor(i, j);
+            } // barreira implícita
+
+            // fase black
+            #pragma omp for nowait schedule(static)
+            for (int i = 1; i < N - 1; i += 2) {
+                for (int j = 2; j < N - 1; j += 2)
+                    if (i != I_FONTE_CALOR || j != J_FONTE_CALOR)
+                        a[i*N + j] = gauss_seidel_sor(i, j);
+            }                     
+            #pragma omp for schedule(static)
+            for (int i = 2; i < N - 1; i += 2) {
+                for (int j = 1; j < N - 1; j += 2)
+                    if (i != I_FONTE_CALOR || j != J_FONTE_CALOR) 
+                        a[i*N + j] = gauss_seidel_sor(i, j);
+            } // barreira implícita                                
+        }              
 
         double* tmp = a;
         a = a_anterior;
@@ -55,11 +69,17 @@ int main(int argc, char* argv[]) {
     }
 
     double erro = 0.0;
-    for (int i = 1; i < N - 1; ++i)
+
+    #pragma omp parallel for default(none) shared(a, a_anterior) reduction(max:erro) schedule(static)
+    for (int i = 1; i < N - 1; ++i) {
         for (int j = 1; j < N - 1; ++j)
             erro = fmax(fabs(a[i*N + j] - a_anterior[i*N + j]), erro);
+    } // barreira implícita
+        
+    double t_fim = omp_get_wtime();
     
     printf("Após %d iterações, o erro era: %.15lf\n", k, erro);
+    printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
 
     free(a);
     free(a_anterior);
@@ -102,6 +122,6 @@ void iniciar() {
 
 double gauss_seidel_sor(int i, int j) {
     double gauss_seidel = 0.25 * (a_anterior[(i + 1)*N + j] + a[(i - 1)*N + j] + a_anterior[i*N + j + 1] + a[i*N + j - 1]);
-    // 1 multiplicação a menos que W*gauss_seidel + (1.0 - W)*a_anterior[i*N + j]
+    // uma multiplicação a menos que W*gauss_seidel + (1.0 - W)*a_anterior[i*N + j]
     return a_anterior[i*N + j] + W*(gauss_seidel - a_anterior[i*N + j]);
 }
