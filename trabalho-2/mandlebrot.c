@@ -16,7 +16,7 @@ typedef struct complextype {
 
 
 void main() {
-    Window		win;                            /* initialization for a window */
+    Window      win;                            /* initialization for a window */
     unsigned
     int         width, height,                  /* window size */
                 x, y,                           /* window position */
@@ -29,10 +29,10 @@ void main() {
     unsigned
     long        valuemask = 0;
     XGCValues	values;
-    Display		*display;
+    Display     *display;
     XSizeHints	size_hints;
-    Pixmap		bitmap;
-    XPoint		points[800];
+    Pixmap      bitmap;
+    XPoint      points[800];
     FILE        *fp, *fopen();
     char        str[100];
     
