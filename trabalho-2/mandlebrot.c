@@ -116,8 +116,12 @@ void main() {
                 k++;
             } while (lengthsq < 4.0 && k < 100);
 
-            if (k == 100) 
-                XDrawPoint(display, win, gc, j, i);
+            if (k == 100) {
+                #pragma omp critical
+                {
+                    XDrawPoint(display, win, gc, j, i);
+                }                
+            }
         }
     } // barreira implícita        
     
