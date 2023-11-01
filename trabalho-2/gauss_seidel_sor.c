@@ -32,7 +32,25 @@ int main(int argc, char* argv[]) {
     while (k < NUM_ITER) {
         #pragma omp parallel default(none) shared(a)
         {
-            // fase red
+            // grid red-black
+            // r: red    B: black
+            //
+            // r B r B r B r B r B
+            // B r B r B r B r B r
+            // r B r B r B r B r B
+            // B r B r B r B r B r
+            // r B r B r B r B r B
+            // B r B r B r B r B r
+            // r B r B r B r B r B
+            // B r B r B r B r B r
+            // r B r B r B r B r B
+            // B r B r B r B r B r
+            //
+            // como o algorítmo utiliza valores calculados na mesma iteração,
+            // tal grid evita condições de corrida sem utilizar mecanismo de
+            // exclusão mútua            
+            
+            // fase red (escrita: red; leitura: black)
             #pragma omp for nowait schedule(static)
             for (int i = 1; i < N - 1; i += 2) {
                 for (int j = 1; j < N - 1; j += 2)
@@ -46,7 +64,7 @@ int main(int argc, char* argv[]) {
                         a[i*N + j] = gauss_seidel_sor(i, j);
             } // barreira implícita
 
-            // fase black
+            // fase black (escrita: black; leitura: red)
             #pragma omp for nowait schedule(static)
             for (int i = 1; i < N - 1; i += 2) {
                 for (int j = 2; j < N - 1; j += 2)
