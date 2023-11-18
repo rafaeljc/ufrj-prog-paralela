@@ -19,7 +19,7 @@ void transpor_mat(double* mat, double* mat_t);
 void exportar_bin();
 void finalizar();
 
-void mult_mat() {
+void multiplicar_mat() {
     transpor_mat(mat2, mat2_t);
     
     long num = n / BLOCO_TAM;
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
     double t_inicio = omp_get_wtime();
 
-    mult_mat();
+    multiplicar_mat();
 
     double t_fim = omp_get_wtime();
     printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
