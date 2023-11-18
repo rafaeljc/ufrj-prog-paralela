@@ -3,7 +3,8 @@
 #include <time.h>
 #include <omp.h> // para medir o tempo de execução com 'omp_get_wtime()'
 
-#define BLOCO_TAM (L1D_CACHE_TAM / sizeof(double)) // gcc -DL1D_CACHE_TAM=$(getconf LEVEL1_DCACHE_LINESIZE)
+// gcc -DL1D_CACHE_TAM=$(getconf LEVEL1_DCACHE_LINESIZE)
+#define BLOCO_TAM (L1D_CACHE_TAM / sizeof(double))
 
 long n;
 double* mat1 = NULL;
