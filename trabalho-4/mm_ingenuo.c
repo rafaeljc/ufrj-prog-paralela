@@ -10,9 +10,9 @@ double* prod = NULL;
 
 unsigned int seed = 2023;
 
-void trata_args(int argc, char* argv[]);
+void tratar_args(int argc, char* argv[]);
 void iniciar();
-void exporta_bin();
+void exportar_bin();
 void finalizar();
 
 void mult_mat() {
@@ -24,7 +24,7 @@ void mult_mat() {
 
 
 int main(int argc, char* argv[]) {
-    trata_args(argc, argv);
+    tratar_args(argc, argv);
     iniciar();
 
     double t_inicio = omp_get_wtime();
@@ -34,13 +34,13 @@ int main(int argc, char* argv[]) {
     double t_fim = omp_get_wtime();
     printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
 
-    exporta_bin();
+    exportar_bin();
     finalizar();
     return 0;
 }
 
 
-void trata_args(int argc, char* argv[]) {
+void tratar_args(int argc, char* argv[]) {
     if (argc == 2) {
         n = atol(argv[1]);
     } else {
@@ -77,7 +77,7 @@ void iniciar() {
             prod[i*n + j] = 0.0;
 }
 
-void exporta_bin() {
+void exportar_bin() {
     FILE* arquivo;
     arquivo = fopen("mat_prod", "wb");
     if (arquivo == NULL) {
