@@ -15,6 +15,7 @@ double* prod = NULL;
 unsigned int seed = 2023;
 
 void tratar_args(int argc, char* argv[]);
+void alocar_mem(double** mat, size_t size);
 void iniciar();
 void transpor_mat(double* mat, double* mat_t);
 void exportar_bin();
@@ -76,16 +77,19 @@ void tratar_args(int argc, char* argv[]) {
     printf("n = %ld\n", n);
 }
 
-void iniciar() {
-    size_t size = n*n * sizeof(double);
-    mat1 = (double*) malloc(size);
-    mat2 = (double*) malloc(size);
-    mat2_t = (double*) malloc(size);
-    prod = (double*) malloc(size);
-    if (mat1 == NULL || mat2 == NULL || mat2_t == NULL || prod == NULL) {
+void alocar_mem(double** mat, size_t size) {
+    if (posix_memalign((void**) mat, L1D_CACHE_TAM, size)) {
         fprintf(stderr, "Não foi possível alocar memória!\n");
         exit(2);
     }
+}
+
+void iniciar() {
+    size_t size = n*n * sizeof(double);
+    alocar_mem(&mat1, size);
+    alocar_mem(&mat2, size);
+    alocar_mem(&mat2_t, size);
+    alocar_mem(&prod, size);
 
     // gera valores de mat1 e mat2
     srand(seed);
