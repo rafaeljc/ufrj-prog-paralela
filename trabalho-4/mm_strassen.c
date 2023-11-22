@@ -57,23 +57,20 @@ void strassen(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_
     long novo_n = _n / 2;
     size_t novo_size = novo_n*novo_n * sizeof(double);
 
-    long offset_10 = novo_n*_n;
-    long offset_11 = novo_n*_n + novo_n;
-
     double* mat1_00 = _mat1;
     double* mat1_01 = _mat1 + novo_n;
-    double* mat1_10 = _mat1 + offset_10;
-    double* mat1_11 = _mat1 + offset_11;
+    double* mat1_10 = _mat1 + novo_n*_mat1_jmp;
+    double* mat1_11 = _mat1 + novo_n*_mat1_jmp + novo_n;
 
     double* mat2_00 = _mat2;
     double* mat2_01 = _mat2 + novo_n;
-    double* mat2_10 = _mat2 + offset_10;
-    double* mat2_11 = _mat2 + offset_11;
+    double* mat2_10 = _mat2 + novo_n*_mat2_jmp;
+    double* mat2_11 = _mat2 + novo_n*_mat2_jmp + novo_n;
 
     double* prod_00 = _prod;
     double* prod_01 = _prod + novo_n;
-    double* prod_10 = _prod + offset_10;
-    double* prod_11 = _prod + offset_11;
+    double* prod_10 = _prod + novo_n*_prod_jmp;
+    double* prod_11 = _prod + novo_n*_prod_jmp + novo_n;
 
     double* s0 = NULL;
     double* s1 = NULL;
