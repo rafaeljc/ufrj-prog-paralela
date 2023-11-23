@@ -100,89 +100,129 @@ void strassen(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_
     #pragma omp taskgroup
     {
         // S0 = B01 - B11
-        // P0 = A00 * S0
-        #pragma omp task depend(out: p0) default(none) firstprivate(s0, novo_size, novo_n, mat2_01, mat2_11, _mat2_jmp, mat1_00, _mat1_jmp) shared(p0)
+        #pragma omp task depend(out: s0) default(none) firstprivate(novo_size, novo_n, mat2_01, mat2_11, _mat2_jmp) shared(s0)
         {
             alocar_mem(&s0, novo_size);
+            subtrair_mat(novo_n, mat2_01, _mat2_jmp, mat2_11, _mat2_jmp, s0, novo_n);
+        }
+        
+        // S1 = A00 + A01
+        #pragma omp task depend(out: s1) default(none) firstprivate(novo_size, novo_n, mat1_00, mat1_01, _mat1_jmp) shared(s1)
+        {
+            alocar_mem(&s1, novo_size);
+            somar_mat(novo_n, mat1_00, _mat1_jmp, mat1_01, _mat1_jmp, s1, novo_n);
+        }
+        
+        // S2 = A10 + A11
+        #pragma omp task depend(out: s2) default(none) firstprivate(novo_size, novo_n, mat1_10, mat1_11, _mat1_jmp) shared(s2)
+        {
+            alocar_mem(&s2, novo_size);
+            somar_mat(novo_n, mat1_10, _mat1_jmp, mat1_11, _mat1_jmp, s2, novo_n);
+        }
+        
+        // S3 = B10 - B00
+        #pragma omp task depend(out: s3) default(none) firstprivate(novo_size, novo_n, mat2_10, mat2_00, _mat2_jmp) shared(s3)
+        {
+            alocar_mem(&s3, novo_size);
+            subtrair_mat(novo_n, mat2_10, _mat2_jmp, mat2_00, _mat2_jmp, s3, novo_n);
+        }
+        
+        // S4 = A00 + A11
+        #pragma omp task depend(out: s4) default(none) firstprivate(novo_size, novo_n, mat1_00, mat1_11, _mat1_jmp) shared(s4)
+        {
+            alocar_mem(&s4, novo_size);
+            somar_mat(novo_n, mat1_00, _mat1_jmp, mat1_11, _mat1_jmp, s4, novo_n);
+        }
+        
+        // S5 = B00 + B11
+        #pragma omp task depend(out: s5) default(none) firstprivate(novo_size, novo_n, mat2_00, mat2_11, _mat2_jmp) shared(s5)
+        {
+            alocar_mem(&s5, novo_size);
+            somar_mat(novo_n, mat2_00, _mat2_jmp, mat2_11, _mat2_jmp, s5, novo_n);
+        }
+        
+        // S6 = A01 - A11
+        #pragma omp task depend(out: s6) default(none) firstprivate(novo_size, novo_n, mat1_01, mat1_11, _mat1_jmp) shared(s6)
+        {
+            alocar_mem(&s6, novo_size);
+            subtrair_mat(novo_n, mat1_01, _mat1_jmp, mat1_11, _mat1_jmp, s6, novo_n);
+        }
+        
+        // S7 = B10 + B11
+        #pragma omp task depend(out: s7) default(none) firstprivate(novo_size, novo_n, mat2_10, mat2_11, _mat2_jmp) shared(s7)
+        {
+            alocar_mem(&s7, novo_size);
+            somar_mat(novo_n, mat2_10, _mat2_jmp, mat2_11, _mat2_jmp, s7, novo_n);
+        }
+        
+        // S8 = A00 - A10
+        #pragma omp task depend(out: s8) default(none) firstprivate(novo_size, novo_n, mat1_00, mat1_10, _mat1_jmp) shared(s8)
+        {
+            alocar_mem(&s8, novo_size);
+            subtrair_mat(novo_n, mat1_00, _mat1_jmp, mat1_10, _mat1_jmp, s8, novo_n);
+        }
+        
+        // S9 = B00 + B01
+        #pragma omp task depend(out: s9) default(none) firstprivate(novo_size, novo_n, mat2_00, mat2_01, _mat2_jmp) shared(s9)
+        {
+            alocar_mem(&s9, novo_size);
+            somar_mat(novo_n, mat2_00, _mat2_jmp, mat2_01, _mat2_jmp, s9, novo_n);
+        }        
+        
+        // P0 = A00 * S0
+        #pragma omp task depend(in: s0) depend(out: p0) default(none) firstprivate(novo_size, novo_n, mat1_00, _mat1_jmp) shared(s0, p0)
+        {
             alocar_mem(&p0, novo_size);
-            subtrair_mat(novo_n, mat2_01, _mat2_jmp, mat2_11, _mat2_jmp, s0, novo_n);    
             strassen(novo_n, mat1_00, _mat1_jmp, s0, novo_n, p0, novo_n);
             free(s0);
         }        
 
-        // S1 = A00 + A01
         // P1 = S1 * B11
-        #pragma omp task depend(out: p1) default(none) firstprivate(s1, novo_size, novo_n, mat1_00, mat1_01, _mat1_jmp, mat2_11, _mat2_jmp) shared(p1)
+        #pragma omp task depend(in: s1) depend(out: p1) default(none) firstprivate(novo_size, novo_n, mat2_11, _mat2_jmp) shared(s1, p1)
         {
-            alocar_mem(&s1, novo_size);
             alocar_mem(&p1, novo_size);
-            somar_mat(novo_n, mat1_00, _mat1_jmp, mat1_01, _mat1_jmp, s1, novo_n);    
             strassen(novo_n, s1, novo_n, mat2_11, _mat2_jmp, p1, novo_n);
             free(s1);
-        }        
-
-        // S2 = A10 + A11
+        }
+        
         // P2 = S2 * B00
-        #pragma omp task depend(out: p2) default(none) firstprivate(s2, novo_size, novo_n, mat1_10, mat1_11, _mat1_jmp, mat2_00, _mat2_jmp) shared(p2)
+        #pragma omp task depend(in: s2) depend(out: p2) default(none) firstprivate(novo_size, novo_n, mat2_00, _mat2_jmp) shared(s2, p2)
         {
-            alocar_mem(&s2, novo_size);
             alocar_mem(&p2, novo_size);
-            somar_mat(novo_n, mat1_10, _mat1_jmp, mat1_11, _mat1_jmp, s2, novo_n);    
             strassen(novo_n, s2, novo_n, mat2_00, _mat2_jmp, p2, novo_n);
             free(s2);
         }
 
-        // S3 = B10 - B00
         // P3 = A11 * S3
-        #pragma omp task depend(out: p3) default(none) firstprivate(s3, novo_size, novo_n, mat2_10, mat2_00, _mat2_jmp, mat1_11, _mat1_jmp) shared(p3)
+        #pragma omp task depend(in: s3) depend(out: p3) default(none) firstprivate(novo_size, novo_n, mat1_11, _mat1_jmp) shared(s3, p3)
         {
-            alocar_mem(&s3, novo_size);
-            alocar_mem(&p3, novo_size);
-            subtrair_mat(novo_n, mat2_10, _mat2_jmp, mat2_00, _mat2_jmp, s3, novo_n);    
+            alocar_mem(&p3, novo_size);                
             strassen(novo_n, mat1_11, _mat1_jmp, s3, novo_n, p3, novo_n);
             free(s3);
         }        
 
-        // S4 = A00 + A11
-        // S5 = B00 + B11
         // P4 = S4 * S5
-        #pragma omp task depend(out: p4) default(none) firstprivate(s4, s5, novo_size, novo_n, mat1_00, mat1_11, _mat1_jmp, mat2_00, mat2_11, _mat2_jmp) shared(p4)
+        #pragma omp task depend(in: s4, s5) depend(out: p4) default(none) firstprivate(novo_size, novo_n) shared(s4, s5, p4)
         {
-            alocar_mem(&s4, novo_size);
-            alocar_mem(&s5, novo_size);
             alocar_mem(&p4, novo_size);
-            somar_mat(novo_n, mat1_00, _mat1_jmp, mat1_11, _mat1_jmp, s4, novo_n); 
-            somar_mat(novo_n, mat2_00, _mat2_jmp, mat2_11, _mat2_jmp, s5, novo_n);   
             strassen(novo_n, s4, novo_n, s5, novo_n, p4, novo_n);
             free(s4);
             free(s5);
-        }        
+        }
 
-        // S6 = A01 - A11
-        // S7 = B10 + B11
         // P5 = S6 * S7
-        #pragma omp task depend(out: p5) default(none) firstprivate(s6, s7, novo_size, novo_n, mat1_01, mat1_11, _mat1_jmp, mat2_10, mat2_11, _mat2_jmp) shared(p5)
+        #pragma omp task depend(in: s6, s7) depend(out: p5) default(none) firstprivate(novo_size, novo_n) shared(s6, s7, p5)
         {
-            alocar_mem(&s6, novo_size);
-            alocar_mem(&s7, novo_size);
             alocar_mem(&p5, novo_size);
-            subtrair_mat(novo_n, mat1_01, _mat1_jmp, mat1_11, _mat1_jmp, s6, novo_n); 
-            somar_mat(novo_n, mat2_10, _mat2_jmp, mat2_11, _mat2_jmp, s7, novo_n);   
             strassen(novo_n, s6, novo_n, s7, novo_n, p5, novo_n);
             free(s6);
             free(s7);
         }        
 
-        // S8 = A00 - A10
-        // S9 = B00 + B01
         // P6 = S8 * S9
-        #pragma omp task depend(out: p6) default(none) firstprivate(s8, s9, novo_size, novo_n, mat1_00, mat1_10, _mat1_jmp, mat2_00, mat2_01, _mat2_jmp) shared(p6)
-        {
-            alocar_mem(&s8, novo_size);
-            alocar_mem(&s9, novo_size);
-            alocar_mem(&p6, novo_size);
-            subtrair_mat(novo_n, mat1_00, _mat1_jmp, mat1_10, _mat1_jmp, s8, novo_n); 
-            somar_mat(novo_n, mat2_00, _mat2_jmp, mat2_01, _mat2_jmp, s9, novo_n);   
+        #pragma omp task depend(in: s8, s9) depend(out: p6) default(none) firstprivate(novo_size, novo_n) shared(s8, s9, p6)
+        {        
+            alocar_mem(&p6, novo_size);               
             strassen(novo_n, s8, novo_n, s9, novo_n, p6, novo_n);
             free(s8);
             free(s9);
