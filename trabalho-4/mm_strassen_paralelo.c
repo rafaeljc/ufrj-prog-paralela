@@ -34,18 +34,20 @@ int main(int argc, char* argv[]) {
     tratar_args(argc, argv);
     iniciar();
 
+    int num_threads = -1;
     double t_inicio = omp_get_wtime();
 
     #pragma omp parallel
     {
         #pragma omp single
         {
+            num_threads = omp_get_num_threads();
             strassen(n, (double*) mat1, n, (double*) mat2, n, (double*) prod, n);
         }
     }
 
     double t_fim = omp_get_wtime();
-    printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
+    printf("%ld x %ld [%d threads] em %.15lf segundos\n", n, n, num_threads, t_fim - t_inicio);
 
     // exportar_bin();
     finalizar();
@@ -372,8 +374,6 @@ void tratar_args(int argc, char* argv[]) {
         fprintf(stderr, "Número de argumentos inválido!\n");
         exit(1);
     }
-
-    printf("n = %ld\n", n);
 }
 
 void alocar_mem(double** mat, size_t size) {

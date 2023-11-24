@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     multiplicar_mat();
 
     double t_fim = omp_get_wtime();
-    printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
+    printf("%ld x %ld em %.15lf segundos\n", n, n, t_fim - t_inicio);
 
     // exportar_bin();
     finalizar();
@@ -65,8 +65,6 @@ void tratar_args(int argc, char* argv[]) {
         fprintf(stderr, "Número de argumentos inválido!\n");
         exit(1);
     }
-
-    printf("n = %ld\n", n);
 }
 
 void alocar_mem(double** mat, size_t size) {
