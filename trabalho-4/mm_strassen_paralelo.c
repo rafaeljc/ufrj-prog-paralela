@@ -294,7 +294,7 @@ void mm_otimizado(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _m
 
     long num = _n / BLOCO_TAM;
 
-    #pragma omp taskloop default(none) firstprivate(num, _mat1, _mat1_jmp, _mat2_t, _n, _prod, _prod_jmp)
+    #pragma omp taskloop grainsize(5) default(none) firstprivate(num, _mat1, _mat1_jmp, _mat2_t, _n, _prod, _prod_jmp)
     for (long i = 0; i < num; ++i) {
         for (long j = 0; j < num; ++j) {
             for (int k = 0; k < BLOCO_TAM; ++k) {
@@ -321,7 +321,7 @@ void mm_otimizado(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _m
 }
 
 void transpor_mat(long _n, double* _mat, long _mat_jmp, double* _mat_t, long _mat_t_jmp) {
-    #pragma omp taskloop default(none) firstprivate(_n, _mat, _mat_jmp, _mat_t, _mat_t_jmp)
+    #pragma omp taskloop grainsize(40) default(none) firstprivate(_n, _mat, _mat_jmp, _mat_t, _mat_t_jmp)
     for (long i = 0; i < _n; ++i) {
         double* p_mat = _mat + i;
         double* p_mat_t = _mat_t + i*_mat_t_jmp;        
@@ -335,7 +335,7 @@ void transpor_mat(long _n, double* _mat, long _mat_jmp, double* _mat_t, long _ma
 
 void somar_mat(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_jmp, 
                double* _adic, long _adic_jmp) {
-    #pragma omp taskloop default(none) firstprivate(_n, _mat1, _mat1_jmp, _mat2, _mat2_jmp, _adic, _adic_jmp)
+    #pragma omp taskloop grainsize(40) default(none) firstprivate(_n, _mat1, _mat1_jmp, _mat2, _mat2_jmp, _adic, _adic_jmp)
     for (long i = 0; i < _n; ++i) {
         double* p_mat1 = _mat1 + i*_mat1_jmp;
         double* p_mat2 = _mat2 + i*_mat2_jmp;
@@ -351,7 +351,7 @@ void somar_mat(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2
 
 void subtrair_mat(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_jmp, 
                   double* _subt, long _subt_jmp) {
-    #pragma omp taskloop default(none) firstprivate(_n, _mat1, _mat1_jmp, _mat2, _mat2_jmp, _subt, _subt_jmp)
+    #pragma omp taskloop grainsize(40) default(none) firstprivate(_n, _mat1, _mat1_jmp, _mat2, _mat2_jmp, _subt, _subt_jmp)
     for (long i = 0; i < _n; ++i) {
         double* p_mat1 = _mat1 + i*_mat1_jmp;
         double* p_mat2 = _mat2 + i*_mat2_jmp;
