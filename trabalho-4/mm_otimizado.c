@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     double t_fim = omp_get_wtime();
     printf("Tempo de execução: %.15lf\n", t_fim - t_inicio);
 
-    exportar_bin();
+    // exportar_bin();
     finalizar();
     return 0;
 }
