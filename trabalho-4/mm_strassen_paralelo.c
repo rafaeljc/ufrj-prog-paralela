@@ -97,6 +97,9 @@ void strassen(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_
     double* p5 = NULL;
     double* p6 = NULL;
 
+    double* tmp0 = NULL;
+    double* tmp1 = NULL;
+
     #pragma omp taskgroup
     {
         // S0 = B01 - B11
@@ -228,13 +231,21 @@ void strassen(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_
             free(s9);
         }        
 
-        // C00 = P4 + P3 - P1 + P5
-        #pragma omp task depend(in: p4, p3, p1, p5) default(none) firstprivate(novo_n, prod_00, _prod_jmp) shared(p4, p3, p1, p5)
+        // C00 = P4 + P3 - P1 + P5 = (P4 + P5) + (P3 - P1) 
+        #pragma omp task depend(in: p4, p5) depend(out: prod_00) default(none) firstprivate(novo_n, _prod_jmp) shared(p4, p5, prod_00)
         {
-            somar_mat(novo_n, p4, novo_n, p3, novo_n, prod_00, _prod_jmp);
-            subtrair_mat(novo_n, prod_00, _prod_jmp, p1, novo_n, prod_00, _prod_jmp);
-            somar_mat(novo_n, prod_00, _prod_jmp, p5, novo_n, prod_00, _prod_jmp);
+            somar_mat(novo_n, p4, novo_n, p5, novo_n, prod_00, _prod_jmp);
         }
+        #pragma omp task depend(in: p3, p1) depend(out: tmp0) default(none) firstprivate(novo_n, novo_size) shared(p3, p1, tmp0)
+        {
+            alocar_mem(&tmp0, novo_size);
+            subtrair_mat(novo_n, p3, novo_n, p1, novo_n, tmp0, novo_n);            
+        }
+        #pragma omp task depend(in: prod_00, tmp0) default(none) firstprivate(novo_n, _prod_jmp) shared(prod_00, tmp0)
+        {            
+            somar_mat(novo_n, prod_00, _prod_jmp, tmp0, novo_n, prod_00, _prod_jmp);
+            free(tmp0);
+        }        
 
         // C01 = P0 + P1
         #pragma omp task depend(in: p0, p1) default(none) firstprivate(novo_n, prod_01, _prod_jmp) shared(p0, p1)
@@ -248,13 +259,21 @@ void strassen(long _n, double* _mat1, long _mat1_jmp, double* _mat2, long _mat2_
             somar_mat(novo_n, p2, novo_n, p3, novo_n, prod_10, _prod_jmp);
         }        
 
-        // C11 = P4 + P0 - P2 - P6
-        #pragma omp task depend(in: p4, p0, p2, p6) default(none) firstprivate(novo_n, prod_11, _prod_jmp) shared(p4, p0, p2, p6)
+        // C11 = P4 + P0 - P2 - P6 = (P4 - P2) + (P0 - P6)
+        #pragma omp task depend(in: p4, p2) depend(out: prod_11) default(none) firstprivate(novo_n, _prod_jmp) shared(p4, p2, prod_11)
         {
-            somar_mat(novo_n, p4, novo_n, p0, novo_n, prod_11, _prod_jmp);
-            subtrair_mat(novo_n, prod_11, _prod_jmp, p2, novo_n, prod_11, _prod_jmp);
-            subtrair_mat(novo_n, prod_11, _prod_jmp, p6, novo_n, prod_11, _prod_jmp);
-        }        
+            subtrair_mat(novo_n, p4, novo_n, p2, novo_n, prod_11, _prod_jmp);
+        }
+        #pragma omp task depend(in: p0, p6) depend(out: tmp1) default(none) firstprivate(novo_n, novo_size) shared(p0, p6, tmp1)
+        {
+            alocar_mem(&tmp1, novo_size);
+            subtrair_mat(novo_n, p0, novo_n, p6, novo_n, tmp1, novo_n);
+        }
+        #pragma omp task depend(in: prod_11, tmp1) default(none) firstprivate(novo_n, _prod_jmp) shared(prod_11, tmp1)
+        {
+            somar_mat(novo_n, prod_11, _prod_jmp, tmp1, novo_n, prod_11, _prod_jmp);
+            free(tmp1);
+        }
     } // barreira implícita
 
     free(p0);
