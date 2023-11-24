@@ -6,7 +6,7 @@
 // gcc -DL1D_CACHE_TAM=$(getconf LEVEL1_DCACHE_LINESIZE)
 #define BLOCO_TAM (L1D_CACHE_TAM / sizeof(double))
 
-long n;
+long n = -1;
 double* mat1 = NULL;
 double* mat2 = NULL;
 double* mat2_t = NULL;

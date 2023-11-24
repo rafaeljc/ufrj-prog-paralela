@@ -3,7 +3,7 @@
 #include <time.h>
 #include <omp.h> // para medir o tempo de execução com 'omp_get_wtime()'
 
-long n;
+long n = -1;
 double* mat1 = NULL;
 double* mat2 = NULL;
 double* prod = NULL;

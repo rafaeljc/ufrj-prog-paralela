@@ -7,7 +7,7 @@
 #define BLOCO_TAM (L1D_CACHE_TAM / sizeof(double))
 #define STRASSEN_LIM 1000
 
-long n;
+long n = -1;
 double* mat1 = NULL;
 double* mat2 = NULL;
 double* prod = NULL;
