@@ -17,3 +17,10 @@ gcc mm_strassen_paralelo.c -DL1D_CACHE_TAM=$(getconf LEVEL1_DCACHE_LINESIZE) -O3
 ```console
 gcc mm_strassen_paralelo.c -DL1D_CACHE_TAM=$(getconf LEVEL1_DCACHE_LINESIZE) -O3 -mavx512f -mavx512er -mavx512cd -mavx512pf -fopenmp -o mm_strassen_paralelo_vet
 ```
+### definindo variáveis de ambiente (OpenMP)
+```console
+export OMP_PLACES=cores
+```
+```console
+export OMP_PROC_BIND=spread
+```
